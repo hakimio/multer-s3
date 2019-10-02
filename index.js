@@ -27,8 +27,9 @@ function defaultKey (req, file, cb) {
 }
 
 function autoContentType (req, file, cb) {
+  var isBase64 = this.isBase64;
   file.stream.once('data', function (firstChunk) {
-    if (this.isBase64) {
+    if (isBase64) {
       firstChunk = Buffer.from(firstChunk, 'base64');
     }
     var type = fileType(firstChunk)
