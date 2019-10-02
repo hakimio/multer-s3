@@ -28,6 +28,9 @@ function defaultKey (req, file, cb) {
 
 function autoContentType (req, file, cb) {
   file.stream.once('data', function (firstChunk) {
+    if (this.isBase64) {
+      firstChunk = Buffer.from(firstChunk, 'base64');
+    }
     var type = fileType(firstChunk)
     var mime
 
@@ -154,6 +157,8 @@ function S3Storage (opts) {
     case 'undefined': this.getSSEKMS = defaultSSEKMS; break
     default: throw new TypeError('Expected opts.sseKmsKeyId to be undefined, string, or function')
   }
+
+  this.isBase64 = opts.isBase64;
 }
 
 S3Storage.prototype._handleFile = function (req, file, cb) {
@@ -177,6 +182,9 @@ S3Storage.prototype._handleFile = function (req, file, cb) {
 
     if (opts.contentDisposition) {
       params.ContentDisposition = opts.contentDisposition
+    }
+    if (this.isBase64) {
+      params.ContentEncoding = 'base64';
     }
 
     var upload = this.s3.upload(params)
